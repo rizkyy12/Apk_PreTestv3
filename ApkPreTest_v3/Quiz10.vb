@@ -1,0 +1,112 @@
+﻿Imports System.Data.OleDb
+Public Class Quiz10
+    'Public Shared ProfileMain
+    Public Shared QuizMain10
+    Dim pilihan As String
+    Dim idJawaban As String
+    Dim i As Integer = 0
+    Sub MunculData()
+        Call Koneksi()
+        lbl_id.Text = QuizMain10
+        Cmd = New OleDbCommand("Select idPertanyaan, soal, KunciJawaban from T_pertanyaan where idPertanyaan = 10 ", Conn)
+        Rd = Cmd.ExecuteReader
+        Rd.Read()
+        If Rd.HasRows Then
+            lbl_no.Text = Rd.Item("idPertanyaan")
+            lbl_q10.Text = Rd.Item("soal")
+            lbl_huruf1.Text = Rd.Item("KunciJawaban")
+        End If
+    End Sub
+
+    Sub MasukanData()
+        If btn_next.Text = "Finish" Then
+            Call Koneksi()
+            Cmd = New OleDbCommand("Select idPertanyaan, idPeserta from T_pertanyaan, T_peserta where idPertanyaan=10 AND idPeserta = '" & lbl_id.Text & "'", Conn)
+            Rd = Cmd.ExecuteReader
+            Rd.Read()
+            'Call RowsData()
+            If Rd.HasRows Then
+                Dim SimpanData As String = "insert into T_jawaban values('" & idJawaban & "','" & lbl_id.Text & "','" & Rd.Item("idPertanyaan") & "','" & pilihan & "', ' ')"
+                Cmd = New OleDbCommand(SimpanData, Conn)
+                Cmd.ExecuteNonQuery()
+                'MsgBox("The question has been finished!")
+                Me.Refresh()
+                Me.Hide()
+                Login_Peserta.ResetText()
+                Login_Peserta.Refresh()
+                MsgBox("The question has been finished!")
+                Application.Restart()
+            End If
+        End If
+    End Sub
+
+    Public Sub load_data()
+        Try
+            Timer1.Enabled = True
+            Me.Refresh()
+            Call Koneksi()
+            Cmd = New OleDbCommand("Select jawaban FROM T_jawaban where idPertanyaan= 10 AND idPeserta = '" & lbl_id.Text & "'", Conn)
+            Rd = Cmd.ExecuteReader
+            Rd.Read()
+            lbl_huruf2.Text = Rd.Item("jawaban")
+            If lbl_huruf1.Text = lbl_huruf2.Text Then
+                lbl_status.Text = "Benar"
+            Else
+                lbl_status.Text = "Salah"
+            End If
+            Dim NewData As String = "update T_jawaban set [Status] = '" & lbl_status.Text & "' where [idPertanyaan]= 10 AND [idPeserta] = '" & lbl_id.Text & "'"
+            Cmd = New OleDbCommand(NewData, Conn)
+            Cmd.ExecuteNonQuery()
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Private Sub Quiz10_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        Call MunculData()
+        lbl_huruf1.Visible = False
+        lbl_huruf2.Visible = False
+        lbl_status.Visible = False
+    End Sub
+    Private Sub rb_1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rb_1.CheckedChanged
+        pilihan = "A"
+        idJawaban = "1"
+    End Sub
+
+    Private Sub rb_2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rb_2.CheckedChanged
+        pilihan = "B"
+        idJawaban = "2"
+    End Sub
+
+    Private Sub rb_3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rb_3.CheckedChanged
+        pilihan = "C"
+        idJawaban = "3"
+    End Sub
+
+    Private Sub rb_4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rb_4.CheckedChanged
+        pilihan = "D"
+        idJawaban = "4"
+    End Sub
+    Private Sub btn_finish_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btn_next.Click
+        Call MasukanData()
+        load_data()
+    End Sub
+    Private Sub btn_back_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btn_back.Click
+        Me.Hide()
+        Quiz9.Show()
+    End Sub
+
+    Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
+        If i = 0 Then
+            load_data()
+        ElseIf i = 1 Then
+            load_data()
+        ElseIf i = 2 Then
+            load_data()
+            i = 0
+            Timer1.Enabled = False
+            Exit Sub
+        End If
+        i += 1
+    End Sub
+End Class
